@@ -78,7 +78,7 @@ export default function Home() {
       <div id="smooth-content" className="relative z-10" ref={mainRef}>
         <main className="min-h-screen w-full z-10">
 
-          <div className={`container max-w-screen-2xl z-20 min-h-screen flex items-center justify-center transition-opacity duration-1000 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
+          <div className={`container max-w-screen-2xl mx-auto z-20 min-h-screen flex items-center justify-center transition-opacity duration-1000 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
             <h1 ref={headingRef} className="text-[8vw] font-light tracking-tight leading-none text-center w-full">
               Building software your clients love to use
             </h1>
