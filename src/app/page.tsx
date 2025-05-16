@@ -1,103 +1,103 @@
+'use client';
+
 import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
+import { ScrollSmoother } from "gsap/ScrollSmoother";
+import AnimatedLogo from "./components/AnimatedLogo";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const mainRef = useRef<HTMLDivElement>(null);
+  const smootherRef = useRef<ScrollSmoother | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  gsap.registerPlugin(ScrollTrigger, SplitText, ScrollSmoother);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  useEffect(() => {
+    // Simulate loading time
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 4000);
+
+    // Control body scrolling
+    if (isLoading) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+
+    return () => {
+      clearTimeout(timer);
+      document.body.style.overflow = 'auto';
+    };
+  }, [isLoading]);
+
+  useEffect(() => {
+    if (!headingRef.current || isLoading) return;
+
+    // Split and animate the text
+    const split = SplitText.create(headingRef.current, {
+      type: "chars,words",
+      charsClass: "char",
+      wordsClass: "word",
+      autoSplit: true,
+      onSplit: (self) => {
+        return gsap.from(self.chars, {
+          duration: 1,
+          y: 100,
+          autoAlpha: 0,
+          stagger: 0.05,
+          ease: "back.out(1.7)",
+        });
+      }
+    });
+
+    // Initialize ScrollSmoother
+    smootherRef.current = ScrollSmoother.create({
+      wrapper: "#smooth-wrapper",
+      content: "#smooth-content",
+      smooth: 1.5,
+      effects: true,
+    });
+
+    // Cleanup
+    return () => {
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+      split.revert();
+      if (smootherRef.current) {
+        smootherRef.current.kill();
+      }
+    };
+  }, [isLoading]);
+
+  return (
+    <div id="smooth-wrapper" className="w-full overflow-hidden">
+      <AnimatedLogo />
+      <div id="smooth-content" className="relative z-10" ref={mainRef}>
+        <main className="min-h-screen w-full z-10">
+
+          <div className={`container max-w-screen-2xl z-20 min-h-screen flex items-center justify-center transition-opacity duration-1000 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
+            <h1 ref={headingRef} className="text-[8vw] font-light tracking-tight leading-none text-center w-full">
+              Building software your clients love to use
+            </h1>
+          </div>
+
+          <div className="spacer h-[25vh]"></div>
+
+          <div className="container max-w-screen-xl mx-auto z-20 min-h-screen flex flex-col items-center justify-center gap-6">
+            <h2 className="text-5xl font-light">Success Cases</h2>
+            <div className="grid grid-cols-2 gap-8 w-full">
+              <div className="rounded-3xl h-80 bg-black/40"></div>
+              <div className="rounded-3xl h-80 bg-black/40"></div>
+              <div className="rounded-3xl h-80 bg-black/40"></div>
+              <div className="rounded-3xl h-80 bg-black/40"></div>
+            </div>
+          </div>
+
+        </main>
+      </div>
     </div>
   );
 }
